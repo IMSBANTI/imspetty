@@ -3,6 +3,7 @@ name: Deploy IMS Petty Cash to GitHub Pages
 on:
   push:
     branches: ["main"]
+  workflow_dispatch: # Enables manual "Run workflow" button in GitHub Actions tab
 
 permissions:
   contents: read
