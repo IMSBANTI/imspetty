@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+    
+    /* IMS Official Brand Colors */
+    --ims-red: #E52328;
+    --ims-red-dark: #b91c1c;
+  }
+}
+
+/* HIDE SCROLLBAR UTILITY FOR NAVBAR */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* DARK THEME (DEFAULT) */
+body.dark-mode {
+  background-color: #0b0c10;
+  color: #f8fafc;
+}
+
+body.dark-mode .glass-panel {
+  background: rgba(20, 22, 30, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 35, 40, 0.18);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(229, 35, 40, 0.04);
+}
+
+body.dark-mode .form-control {
+  background-color: #0f1118;
+  border-color: #272a37;
+  color: #f1f5f9;
+}
+body.dark-mode .form-control:focus {
+  border-color: #e52328;
+  background-color: #14161e;
+  box-shadow: 0 0 0 3px rgba(229, 35, 40, 0.2);
+}
+
+body.dark-mode .custom-table th {
+  background-color: #12141c;
+  color: #94a3b8;
+  border-bottom: 1px solid #232634;
+}
+body.dark-mode .custom-table td {
+  border-bottom: 1px solid #1a1d28;
+  color: #e2e8f0;
+}
+body.dark-mode .custom-table tbody tr:hover {
+  background-color: rgba(229, 35, 40, 0.08);
+}
+body.dark-mode .table-container {
+  border-color: #232634;
+}
+
+/* LIGHT THEME (DAY MODE) */
+body.light-mode {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+body.light-mode .glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 0 15px rgba(229, 35, 40, 0.05);
+}
+
+body.light-mode .glass-panel h2,
+body.light-mode .glass-panel h3,
+body.light-mode .glass-panel h4 {
+  color: #0f172a !important;
+}
+
+body.light-mode .glass-panel p {
+  color: #64748b;
+}
+
+body.light-mode .form-control {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body.light-mode .form-control:focus {
+  border-color: #e52328;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(229, 35, 40, 0.15);
+}
+
+body.light-mode .custom-table th {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+body.light-mode .custom-table td {
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+body.light-mode .custom-table tbody tr:hover {
+  background-color: rgba(229, 35, 40, 0.05);
+}
+body.light-mode .table-container {
+  border-color: #e2e8f0;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: #1f222d;
+}
+
+/* IMS Brand Red Text Gradients */
+.ims-red-gradient-text {
+  background: linear-gradient(135deg, #ef4444 0%, #e52328 60%, #b91c1c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Table styling */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.custom-table th {
+  font-weight: 600;
+  padding: 0.85rem 1.1rem;
+  text-transform: uppercase;
+  font-size: 0.725rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.custom-table td {
+  padding: 0.85rem 1.1rem;
+  transition: background-color 0.15s ease;
+}
+
+/* Buttons styling */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.btn-primary, .btn-red {
+  background: linear-gradient(135deg, #e52328 0%, #b91c1c 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(229, 35, 40, 0.35);
+}
+.btn-primary:hover, .btn-red:hover {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(229, 35, 40, 0.45);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #e52328 0%, #991b1b 100%);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(229, 35, 40, 0.35);
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  transform: translateY(-1.5px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+body.dark-mode .btn-secondary {
+  background: #14161e;
+  color: #cbd5e1;
+  border-color: #272a37;
+}
+.btn-secondary:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #e52328;
+}
+body.dark-mode .btn-secondary:hover {
+  background: #1f222d;
+  color: white;
+  border-color: #e52328;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+.badge-red, .badge-blue, .badge-gold { 
+  background: rgba(229, 35, 40, 0.12); 
+  color: #dc2626; 
+  border: 1px solid rgba(229, 35, 40, 0.3); 
+}
+body.dark-mode .badge-red, body.dark-mode .badge-blue, body.dark-mode .badge-gold {
+  color: #ff6b6b;
+}
+
+.badge-green { 
+  background: rgba(16, 185, 129, 0.12); 
+  color: #059669; 
+  border: 1px solid rgba(16, 185, 129, 0.3); 
+}
+body.dark-mode .badge-green {
+  color: #34d399;
+}
+
+/* Print styling */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .printable-area {
+    display: block !important;
+    width: 100% !important;
+    background: white !important;
+    color: black !important;
+  }
+}
