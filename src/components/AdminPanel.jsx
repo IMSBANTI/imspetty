@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, FolderPlus, Tag, Users, Bus } from 'lucide-react';
+import { Plus, Trash2, FolderPlus, Tag, Users, Bus, KeyRound } from 'lucide-react';
 
 export default function AdminPanel({
   categories,
@@ -9,7 +9,8 @@ export default function AdminPanel({
   staffList,
   onSaveStaffList,
   transportModes,
-  onSaveTransportModes
+  onSaveTransportModes,
+  onNavigatePasswords
 }) {
   const [newCat, setNewCat] = useState('');
   const [newProj, setNewProj] = useState('');
@@ -99,21 +100,33 @@ export default function AdminPanel({
   return (
     <div className="space-y-8">
       {/* Title */}
-      <div className="glass-panel p-6 rounded-2xl border border-slate-800">
-        <h2 className="text-xl font-bold font-heading text-slate-100 flex items-center gap-2">
-          <Tag className="w-5 h-5 text-amber-400" />
-          Admin Control Center - Manage System Items & Projects
-        </h2>
-        <p className="text-xs text-slate-400">
-          Create and delete expense categories, projects, employees, and transport options available in voucher entry.
-        </p>
+      <div className="glass-panel p-6 rounded-3xl border border-red-950/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Tag className="w-5 h-5 text-red-500" />
+            Admin Control Center - Manage System Items & Projects
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Create and delete expense categories, projects, employees, and transport options available in voucher entry.
+          </p>
+        </div>
+
+        {onNavigatePasswords && (
+          <button
+            onClick={onNavigatePasswords}
+            className="btn btn-red text-xs py-2 px-4 rounded-xl flex items-center gap-1.5 font-bold shadow-md whitespace-nowrap"
+          >
+            <KeyRound className="w-4 h-4" />
+            <span>Change Passwords</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 1. Expense Categories Management */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-100 flex items-center gap-2">
-            <Tag className="w-4 h-4 text-blue-400" />
+        <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <h3 className="text-lg font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Tag className="w-4 h-4 text-red-500" />
             Manage Expense Categories ({categories.length})
           </h3>
 
@@ -123,20 +136,20 @@ export default function AdminPanel({
               placeholder="Add new category (e.g. Audit Expenses)..."
               value={newCat}
               onChange={(e) => setNewCat(e.target.value)}
-              className="form-control"
+              className="form-control text-xs"
             />
-            <button type="submit" className="btn btn-primary text-xs whitespace-nowrap">
+            <button type="submit" className="btn btn-red text-xs whitespace-nowrap py-2 px-3">
               <Plus className="w-4 h-4" /> Add Item
             </button>
           </form>
 
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {categories.map((cat) => (
-              <div key={cat} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/80 border border-slate-700">
-                <span className="text-sm text-slate-200">{cat}</span>
+              <div key={cat} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <span className="text-sm text-slate-800 dark:text-slate-200">{cat}</span>
                 <button
                   onClick={() => handleDeleteCategory(cat)}
-                  className="p-1 text-rose-400 hover:bg-rose-500/10 rounded"
+                  className="p-1 text-rose-500 hover:bg-rose-500/10 rounded"
                   title="Delete Category"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -147,9 +160,9 @@ export default function AdminPanel({
         </div>
 
         {/* 2. Projects Management */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-100 flex items-center gap-2">
-            <FolderPlus className="w-4 h-4 text-emerald-400" />
+        <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <h3 className="text-lg font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <FolderPlus className="w-4 h-4 text-emerald-500" />
             Manage Projects ({projects.length})
           </h3>
 
@@ -159,20 +172,20 @@ export default function AdminPanel({
               placeholder="Add new project (e.g. Project X)..."
               value={newProj}
               onChange={(e) => setNewProj(e.target.value)}
-              className="form-control"
+              className="form-control text-xs"
             />
-            <button type="submit" className="btn btn-gold text-xs whitespace-nowrap">
+            <button type="submit" className="btn btn-red text-xs whitespace-nowrap py-2 px-3">
               <Plus className="w-4 h-4" /> Add Project
             </button>
           </form>
 
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {projects.map((proj) => (
-              <div key={proj} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/80 border border-slate-700">
-                <span className="text-sm text-slate-200">{proj}</span>
+              <div key={proj} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <span className="text-sm text-slate-800 dark:text-slate-200">{proj}</span>
                 <button
                   onClick={() => handleDeleteProject(proj)}
-                  className="p-1 text-rose-400 hover:bg-rose-500/10 rounded"
+                  className="p-1 text-rose-500 hover:bg-rose-500/10 rounded"
                   title="Delete Project"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -183,9 +196,9 @@ export default function AdminPanel({
         </div>
 
         {/* 3. Staff / Employee Management */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-100 flex items-center gap-2">
-            <Users className="w-4 h-4 text-amber-400" />
+        <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <h3 className="text-lg font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Users className="w-4 h-4 text-amber-500" />
             Manage Staff / Paid To List ({staffList.length})
           </h3>
 
@@ -195,20 +208,20 @@ export default function AdminPanel({
               placeholder="Add new staff member name..."
               value={newStaff}
               onChange={(e) => setNewStaff(e.target.value)}
-              className="form-control"
+              className="form-control text-xs"
             />
-            <button type="submit" className="btn btn-primary text-xs whitespace-nowrap">
+            <button type="submit" className="btn btn-red text-xs whitespace-nowrap py-2 px-3">
               <Plus className="w-4 h-4" /> Add Staff
             </button>
           </form>
 
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {staffList.map((staff) => (
-              <div key={staff} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/80 border border-slate-700">
-                <span className="text-sm text-slate-200">{staff}</span>
+              <div key={staff} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <span className="text-sm text-slate-800 dark:text-slate-200">{staff}</span>
                 <button
                   onClick={() => handleDeleteStaff(staff)}
-                  className="p-1 text-rose-400 hover:bg-rose-500/10 rounded"
+                  className="p-1 text-rose-500 hover:bg-rose-500/10 rounded"
                   title="Delete Staff"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -219,9 +232,9 @@ export default function AdminPanel({
         </div>
 
         {/* 4. Transport Modes Management */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-100 flex items-center gap-2">
-            <Bus className="w-4 h-4 text-purple-400" />
+        <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <h3 className="text-lg font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Bus className="w-4 h-4 text-purple-500" />
             Manage Transport Modes ({transportModes.length})
           </h3>
 
@@ -231,20 +244,20 @@ export default function AdminPanel({
               placeholder="Add transport mode (e.g. Metro Rail)..."
               value={newTransport}
               onChange={(e) => setNewTransport(e.target.value)}
-              className="form-control"
+              className="form-control text-xs"
             />
-            <button type="submit" className="btn btn-gold text-xs whitespace-nowrap">
+            <button type="submit" className="btn btn-red text-xs whitespace-nowrap py-2 px-3">
               <Plus className="w-4 h-4" /> Add Transport
             </button>
           </form>
 
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {transportModes.map((mode) => (
-              <div key={mode} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/80 border border-slate-700">
-                <span className="text-sm text-slate-200">{mode}</span>
+              <div key={mode} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <span className="text-sm text-slate-800 dark:text-slate-200">{mode}</span>
                 <button
                   onClick={() => handleDeleteTransport(mode)}
-                  className="p-1 text-rose-400 hover:bg-rose-500/10 rounded"
+                  className="p-1 text-rose-500 hover:bg-rose-500/10 rounded"
                   title="Delete Transport Mode"
                 >
                   <Trash2 className="w-4 h-4" />

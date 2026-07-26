@@ -266,6 +266,7 @@ export default function App() {
                 onSaveStaffList={handleUpdateStaff}
                 transportModes={transportModes}
                 onSaveTransportModes={handleUpdateTransport}
+                onNavigatePasswords={() => setActiveTab('passwords')}
               />
             )}
 
