@@ -110,13 +110,13 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
         <div className="table-container">
           <table className="custom-table text-xs">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+              <tr>
                 <th className="whitespace-nowrap">Category</th>
                 {monthNames.map(m => <th key={m} className="text-right whitespace-nowrap">{m}</th>)}
-                <th className="text-right bg-slate-200 dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">Total (TK)</th>
+                <th className="text-right font-bold whitespace-nowrap">Total (TK)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody>
               {categories.map(cat => {
                 let rowSum = 0;
                 return (
@@ -131,7 +131,7 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
                         </td>
                       );
                     })}
-                    <td className="text-right font-mono font-bold text-red-600 dark:text-red-400 bg-slate-100/70 dark:bg-slate-800/70 whitespace-nowrap">
+                    <td className="text-right font-mono font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                       ৳{rowSum.toLocaleString()}
                     </td>
                   </tr>
@@ -139,14 +139,14 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-slate-900 dark:bg-slate-950 text-white font-bold font-mono border-t-2 border-slate-700">
-                <td className="text-amber-400 font-extrabold uppercase whitespace-nowrap px-3 py-3">MONTHLY TOTAL</td>
+              <tr>
+                <td className="font-extrabold uppercase whitespace-nowrap px-3 py-3">MONTHLY TOTAL</td>
                 {months.map(m => (
-                  <td key={m} className="text-right text-emerald-400 font-bold px-3 py-3 whitespace-nowrap">
+                  <td key={m} className="text-right font-bold font-mono px-3 py-3 whitespace-nowrap">
                     ৳{(monthTotals[m] || 0).toLocaleString()}
                   </td>
                 ))}
-                <td className="text-right text-red-400 font-extrabold text-sm px-3 py-3 whitespace-nowrap bg-slate-950 dark:bg-black">
+                <td className="text-right font-extrabold font-mono text-sm px-3 py-3 whitespace-nowrap grand-total-col">
                   ৳{yearGrandTotal.toLocaleString()}
                 </td>
               </tr>
@@ -164,13 +164,13 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
         <div className="table-container">
           <table className="custom-table text-xs">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+              <tr>
                 <th className="whitespace-nowrap">Project Name</th>
                 {monthNames.map(m => <th key={m} className="text-right whitespace-nowrap">{m}</th>)}
-                <th className="text-right bg-slate-200 dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">Total (TK)</th>
+                <th className="text-right font-bold whitespace-nowrap">Total (TK)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody>
               {projects.map(proj => {
                 let rowSum = 0;
                 return (
@@ -185,7 +185,7 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
                         </td>
                       );
                     })}
-                    <td className="text-right font-mono font-bold text-red-600 dark:text-red-400 bg-slate-100/70 dark:bg-slate-800/70 whitespace-nowrap">
+                    <td className="text-right font-mono font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                       ৳{rowSum.toLocaleString()}
                     </td>
                   </tr>
@@ -193,14 +193,14 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-slate-900 dark:bg-slate-950 text-white font-bold font-mono border-t-2 border-slate-700">
-                <td className="text-amber-400 font-extrabold uppercase whitespace-nowrap px-3 py-3">MONTHLY TOTAL</td>
+              <tr>
+                <td className="font-extrabold uppercase whitespace-nowrap px-3 py-3">MONTHLY TOTAL</td>
                 {months.map(m => (
-                  <td key={m} className="text-right text-emerald-400 font-bold px-3 py-3 whitespace-nowrap">
+                  <td key={m} className="text-right font-bold font-mono px-3 py-3 whitespace-nowrap">
                     ৳{(monthTotals[m] || 0).toLocaleString()}
                   </td>
                 ))}
-                <td className="text-right text-red-400 font-extrabold text-sm px-3 py-3 whitespace-nowrap bg-slate-950 dark:bg-black">
+                <td className="text-right font-extrabold font-mono text-sm px-3 py-3 whitespace-nowrap grand-total-col">
                   ৳{yearGrandTotal.toLocaleString()}
                 </td>
               </tr>
