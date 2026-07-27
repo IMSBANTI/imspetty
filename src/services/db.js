@@ -1,53 +1,33 @@
-// IndexedDB & LocalStorage Database Service for IMS Petty Cash Software
+// IndexedDB & LocalStorage Database Service for IMS Petty Cash Management System
+
+import { INITIAL_VOUCHERS, INITIAL_CASH_ADVANCES } from './seedVouchers';
 
 const DB_NAME = 'IMSPettyCashDB';
-const DB_VERSION = 2; // Incremented version for cash advances
-const STORE_VOUCHERS = 'vouchers';
-const STORE_ADVANCES = 'cash_advances';
+const DB_VERSION = 2;
 
-// Initialize IndexedDB for vouchers & cash advances
-const openDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_VOUCHERS)) {
-        db.createObjectStore(STORE_VOUCHERS, { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains(STORE_ADVANCES)) {
-        db.createObjectStore(STORE_ADVANCES, { keyPath: 'id' });
-      }
-    };
-    request.onsuccess = (e) => resolve(e.target.result);
-    request.onerror = (e) => reject(e.target.error);
-  });
-};
-
-// Default initial config data
+// Default Item Categories
 const DEFAULT_CATEGORIES = [
   'Conveyance',
   'Food for Guest',
   'Office Staff Food',
   'Grocery',
   'Stationery',
-  'Office Others',
   'Laptop & Desktop',
   'Electric Purpose',
   'Household',
-  "Director's Expenditure"
+  'Office Others'
 ];
 
+// Default Projects
 const DEFAULT_PROJECTS = [
   'IMS Head Office',
-  'CLAN',
   'BATB CE',
   'BATB PFP',
   'BHN',
-  'Nagad',
-  'BPO',
-  'Forecast Films'
+  'Nagad'
 ];
 
+// Default Staff List
 const DEFAULT_STAFF = [
   'Mojnu',
   'Shohag',
@@ -57,158 +37,234 @@ const DEFAULT_STAFF = [
   'Jahangir',
   'Rakibul',
   'Asif',
-  'Management'
+  'Office Staff'
 ];
 
-const DEFAULT_TRANSPORT = [
+// Default Transport Modes
+const DEFAULT_TRANSPORT_MODES = [
   'Rickshaw',
   'Bike',
   'Uber',
   'CNG',
   'Bus',
-  'Train',
-  'Walking / N/A'
+  'Rickshaw, Uber',
+  'Bike, Rickshaw',
+  '-'
 ];
 
-// Helper to load/save JSON from localStorage
-export const getLocalSetting = (key, fallback) => {
-  try {
-    const data = localStorage.getItem(`ims_pc_${key}`);
-    return data ? JSON.parse(data) : fallback;
-  } catch (err) {
-    console.error(err);
-    return fallback;
-  }
-};
-
-export const setLocalSetting = (key, value) => {
-  try {
-    localStorage.setItem(`ims_pc_${key}`, JSON.stringify(value));
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-// Category Management
-export const getCategories = () => getLocalSetting('categories', DEFAULT_CATEGORIES);
-export const saveCategories = (cats) => setLocalSetting('categories', cats);
-
-// Project Management
-export const getProjects = () => getLocalSetting('projects', DEFAULT_PROJECTS);
-export const saveProjects = (projs) => setLocalSetting('projects', projs);
-
-// Staff Management
-export const getStaffList = () => getLocalSetting('staff', DEFAULT_STAFF);
-export const saveStaffList = (staff) => setLocalSetting('staff', staff);
-
-// Transport Mode Management
-export const getTransportModes = () => getLocalSetting('transport', DEFAULT_TRANSPORT);
-export const saveTransportModes = (transports) => setLocalSetting('transport', transports);
-
-// Auth Credentials
-export const getAuthCredentials = () => {
-  return getLocalSetting('auth', {
-    adminPass: 'admin123',
-    userPass: 'user123'
+// File to Base64 Converter Helper
+export const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
   });
 };
 
-export const saveAuthCredentials = (creds) => {
-  setLocalSetting('auth', creds);
+// Open IndexedDB Connection
+const openDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onerror = (event) => {
+      console.error('IndexedDB error:', event.target.error);
+      reject(event.target.error);
+    };
+
+    request.onsuccess = (event) => {
+      resolve(event.target.result);
+    };
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      // Store 1: Vouchers
+      if (!db.objectStoreNames.contains('vouchers')) {
+        const store = db.createObjectStore('vouchers', { keyPath: 'id' });
+        store.createIndex('date', 'date', { unique: false });
+        store.createIndex('category', 'category', { unique: false });
+        store.createIndex('project', 'project', { unique: false });
+      }
+
+      // Store 2: Cash Advances from Accounts
+      if (!db.objectStoreNames.contains('cash_advances')) {
+        const advStore = db.createObjectStore('cash_advances', { keyPath: 'id' });
+        advStore.createIndex('date', 'date', { unique: false });
+      }
+    };
+  });
 };
 
-// Voucher Database CRUD via IndexedDB
+// --- LocalStorage Configuration Helpers ---
+
+export const getCategories = () => {
+  const saved = localStorage.getItem('ims_categories');
+  return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+};
+
+export const saveCategories = (cats) => {
+  localStorage.setItem('ims_categories', JSON.stringify(cats));
+};
+
+export const getProjects = () => {
+  const saved = localStorage.getItem('ims_projects');
+  return saved ? JSON.parse(saved) : DEFAULT_PROJECTS;
+};
+
+export const saveProjects = (projs) => {
+  localStorage.setItem('ims_projects', JSON.stringify(projs));
+};
+
+export const getStaffList = () => {
+  const saved = localStorage.getItem('ims_staff');
+  return saved ? JSON.parse(saved) : DEFAULT_STAFF;
+};
+
+export const saveStaffList = (staff) => {
+  localStorage.setItem('ims_staff', JSON.stringify(staff));
+};
+
+export const getTransportModes = () => {
+  const saved = localStorage.getItem('ims_transport_modes');
+  return saved ? JSON.parse(saved) : DEFAULT_TRANSPORT_MODES;
+};
+
+export const saveTransportModes = (modes) => {
+  localStorage.setItem('ims_transport_modes', JSON.stringify(modes));
+};
+
+// Auth User Credential Helpers
+export const getAuthCredentials = () => {
+  const adminPass = localStorage.getItem('ims_admin_password') || 'admin123';
+  const userPass = localStorage.getItem('ims_user_password') || 'user123';
+  return { adminPass, userPass };
+};
+
+export const saveAuthCredentials = ({ adminPass, userPass }) => {
+  if (adminPass) localStorage.setItem('ims_admin_password', adminPass);
+  if (userPass) localStorage.setItem('ims_user_password', userPass);
+};
+
+export const setAdminPassword = (newPass) => {
+  localStorage.setItem('ims_admin_password', newPass);
+};
+
+export const setUserPassword = (newPass) => {
+  localStorage.setItem('ims_user_password', newPass);
+};
+
+// Local Preferences
+export const getLocalSetting = (key, defaultVal) => {
+  const val = localStorage.getItem(`ims_setting_${key}`);
+  return val !== null ? JSON.parse(val) : defaultVal;
+};
+
+export const setLocalSetting = (key, val) => {
+  localStorage.setItem(`ims_setting_${key}`, JSON.stringify(val));
+};
+
+// --- IndexedDB Vouchers Store CRUD ---
+
 export const getAllVouchers = async () => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_VOUCHERS, 'readonly');
-      const store = tx.objectStore(STORE_VOUCHERS);
-      const req = store.getAll();
-      req.onsuccess = () => {
-        const items = req.result || [];
-        items.sort((a, b) => new Date(b.date) - new Date(a.date));
-        resolve(items);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  } catch (err) {
-    console.error('IndexedDB error', err);
-    return getLocalSetting('vouchers_fallback', []);
-  }
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('vouchers', 'readwrite');
+    const store = tx.objectStore('vouchers');
+    const request = store.getAll();
+
+    request.onsuccess = async () => {
+      let list = request.result || [];
+      // If store is completely empty, seed with initial vouchers!
+      if (list.length === 0 && INITIAL_VOUCHERS && INITIAL_VOUCHERS.length > 0) {
+        const seedTx = db.transaction('vouchers', 'readwrite');
+        const seedStore = seedTx.objectStore('vouchers');
+        for (const seed of INITIAL_VOUCHERS) {
+          seedStore.put(seed);
+        }
+        list = INITIAL_VOUCHERS;
+      }
+      // Sort newest date first
+      list.sort((a, b) => new Date(b.date) - new Date(a.date));
+      resolve(list);
+    };
+
+    request.onerror = () => reject(request.error);
+  });
 };
 
 export const saveVoucher = async (voucher) => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_VOUCHERS, 'readwrite');
-    const store = tx.objectStore(STORE_VOUCHERS);
-    const req = store.put(voucher);
-    req.onsuccess = () => resolve(voucher);
-    req.onerror = () => reject(req.error);
+    const tx = db.transaction('vouchers', 'readwrite');
+    const store = tx.objectStore('vouchers');
+    const request = store.put(voucher);
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 };
 
 export const deleteVoucher = async (id) => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_VOUCHERS, 'readwrite');
-    const store = tx.objectStore(STORE_VOUCHERS);
-    const req = store.delete(id);
-    req.onsuccess = () => resolve(true);
-    req.onerror = () => reject(req.error);
+    const tx = db.transaction('vouchers', 'readwrite');
+    const store = tx.objectStore('vouchers');
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => reject(request.error);
   });
 };
 
-// Cash Advance Database CRUD via IndexedDB
+// --- IndexedDB Cash Advances Store CRUD ---
+
 export const getAllCashAdvances = async () => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_ADVANCES, 'readonly');
-      const store = tx.objectStore(STORE_ADVANCES);
-      const req = store.getAll();
-      req.onsuccess = () => {
-        const items = req.result || [];
-        items.sort((a, b) => new Date(b.date) - new Date(a.date));
-        resolve(items);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  } catch (err) {
-    console.error('IndexedDB error', err);
-    return getLocalSetting('advances_fallback', []);
-  }
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('cash_advances', 'readwrite');
+    const store = tx.objectStore('cash_advances');
+    const request = store.getAll();
+
+    request.onsuccess = async () => {
+      let list = request.result || [];
+      // If store is completely empty, seed with initial cash advances!
+      if (list.length === 0 && INITIAL_CASH_ADVANCES && INITIAL_CASH_ADVANCES.length > 0) {
+        const seedTx = db.transaction('cash_advances', 'readwrite');
+        const seedStore = seedTx.objectStore('cash_advances');
+        for (const seed of INITIAL_CASH_ADVANCES) {
+          seedStore.put(seed);
+        }
+        list = INITIAL_CASH_ADVANCES;
+      }
+      list.sort((a, b) => new Date(b.date) - new Date(a.date));
+      resolve(list);
+    };
+
+    request.onerror = () => reject(request.error);
+  });
 };
 
 export const saveCashAdvance = async (advance) => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_ADVANCES, 'readwrite');
-    const store = tx.objectStore(STORE_ADVANCES);
-    const req = store.put(advance);
-    req.onsuccess = () => resolve(advance);
-    req.onerror = () => reject(req.error);
+    const tx = db.transaction('cash_advances', 'readwrite');
+    const store = tx.objectStore('cash_advances');
+    const request = store.put(advance);
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 };
 
 export const deleteCashAdvance = async (id) => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_ADVANCES, 'readwrite');
-    const store = tx.objectStore(STORE_ADVANCES);
-    const req = store.delete(id);
-    req.onsuccess = () => resolve(true);
-    req.onerror = () => reject(req.error);
-  });
-};
+    const tx = db.transaction('cash_advances', 'readwrite');
+    const store = tx.objectStore('cash_advances');
+    const request = store.delete(id);
 
-// Helper function to convert uploaded file to Base64
-export const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (err) => reject(err);
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => reject(request.error);
   });
 };
