@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, BarChart3, TrendingUp } from 'lucide-react';
 
 export default function ExpenditureAnalytics({ vouchers, categories, projects }) {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  // Extract unique years from vouchers and include current/previous years
+  const currentYearStr = new Date().getFullYear().toString();
+  const extractedYears = vouchers
+    .map(v => v.date ? v.date.substring(0, 4) : null)
+    .filter(Boolean);
 
-  // Extract unique years from vouchers
-  const years = Array.from(new Set(vouchers.map(v => v.date ? v.date.substring(0, 4) : '2026'))).sort().reverse();
-  if (years.length === 0) years.push(new Date().getFullYear().toString());
+  const allYearsSet = new Set([...extractedYears, '2025', '2026', currentYearStr]);
+  const years = Array.from(allYearsSet).sort().reverse();
+
+  // Default to year with most data or most recent available year
+  const [selectedYear, setSelectedYear] = useState(() => {
+    return extractedYears.length > 0 ? extractedYears[0] : '2025';
+  });
+
+  // Ensure selectedYear is valid if vouchers update
+  useEffect(() => {
+    if (!years.includes(selectedYear)) {
+      setSelectedYear(years[0]);
+    }
+  }, [vouchers]);
 
   const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -66,7 +81,7 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
           <select 
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="form-control font-mono font-bold text-red-600 dark:text-red-400 text-base py-1.5 w-32"
+            className="form-control font-mono font-bold text-red-600 dark:text-red-400 text-base py-1.5 w-36"
           >
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -82,7 +97,7 @@ export default function ExpenditureAnalytics({ vouchers, categories, projects })
           </h3>
         </div>
         <div className="text-right text-xs text-slate-500 dark:text-slate-400">
-          <p className="font-medium">Calculated across all 12 months</p>
+          <p className="font-medium">Calculated across all 12 months for {selectedYear}</p>
         </div>
       </div>
 
