@@ -175,15 +175,21 @@ export const getAllVouchers = async () => {
 
     request.onsuccess = async () => {
       let list = request.result || [];
-      // If store is completely empty, seed with initial vouchers!
-      if (list.length === 0 && INITIAL_VOUCHERS && INITIAL_VOUCHERS.length > 0) {
-        const seedTx = db.transaction('vouchers', 'readwrite');
-        const seedStore = seedTx.objectStore('vouchers');
+      const existingIds = new Set(list.map(v => v.id));
+      
+      // Auto-insert any missing initial seed vouchers
+      let addedSeed = false;
+      if (INITIAL_VOUCHERS && INITIAL_VOUCHERS.length > 0) {
         for (const seed of INITIAL_VOUCHERS) {
-          seedStore.put(seed);
+          if (!existingIds.has(seed.id)) {
+            store.put(seed);
+            list.push(seed);
+            existingIds.add(seed.id);
+            addedSeed = true;
+          }
         }
-        list = INITIAL_VOUCHERS;
       }
+
       // Sort newest date first
       list.sort((a, b) => new Date(b.date) - new Date(a.date));
       resolve(list);
@@ -228,14 +234,16 @@ export const getAllCashAdvances = async () => {
 
     request.onsuccess = async () => {
       let list = request.result || [];
-      // If store is completely empty, seed with initial cash advances!
-      if (list.length === 0 && INITIAL_CASH_ADVANCES && INITIAL_CASH_ADVANCES.length > 0) {
-        const seedTx = db.transaction('cash_advances', 'readwrite');
-        const seedStore = seedTx.objectStore('cash_advances');
+      const existingIds = new Set(list.map(a => a.id));
+
+      if (INITIAL_CASH_ADVANCES && INITIAL_CASH_ADVANCES.length > 0) {
         for (const seed of INITIAL_CASH_ADVANCES) {
-          seedStore.put(seed);
+          if (!existingIds.has(seed.id)) {
+            store.put(seed);
+            list.push(seed);
+            existingIds.add(seed.id);
+          }
         }
-        list = INITIAL_CASH_ADVANCES;
       }
       list.sort((a, b) => new Date(b.date) - new Date(a.date));
       resolve(list);
