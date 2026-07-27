@@ -1,4 +1,4 @@
-// Ultra-Simple 1-Click Cloud Sync & Backup Engine for IMS Petty Cash
+// 1-Click Cloud & File Transfer Engine for IMS Petty Cash
 
 import { getLocalSetting, setLocalSetting } from './db';
 
@@ -8,16 +8,15 @@ export const getCloudConfig = () => {
   return getLocalSetting(CLOUD_CONFIG_KEY, {
     syncCode: getLocalSetting('cloud_sync_code', `IMS-${Math.floor(100000 + Math.random() * 900000)}`),
     lastSyncedAt: null,
-    provider: 'simple', // 'simple' | 'github'
-    githubToken: '',
-    githubGistId: ''
+    githubToken: getLocalSetting('github_token', ''),
+    githubGistId: getLocalSetting('github_gist_id', '')
   });
 };
 
 export const saveCloudConfig = (config) => {
-  if (config.syncCode) {
-    setLocalSetting('cloud_sync_code', config.syncCode);
-  }
+  if (config.syncCode) setLocalSetting('cloud_sync_code', config.syncCode);
+  if (config.githubToken !== undefined) setLocalSetting('github_token', config.githubToken);
+  if (config.githubGistId !== undefined) setLocalSetting('github_gist_id', config.githubGistId);
   setLocalSetting(CLOUD_CONFIG_KEY, config);
 };
 
@@ -39,86 +38,78 @@ export const createSystemCloudPayload = (vouchers, cashAdvances, categories, pro
   };
 };
 
-// Simple 1-Click Cloud Sync via Free Public Cloud Key-Value Store (JSONBlob API)
-export const syncToSimpleCloud = async (payload, syncCode) => {
-  const cleanCode = syncCode.trim().toUpperCase();
-  if (!cleanCode) {
-    throw new Error('Please enter a Sync Code.');
+// GitHub Gist Sync
+export const syncToGitHubGist = async (payload, config) => {
+  if (!config.githubToken) {
+    throw new Error('GitHub Personal Access Token is required.');
   }
 
-  const endpoint = `https://jsonblob.com/api/jsonBlob/${encodeURIComponent(cleanCode)}`;
-
-  try {
-    const response = await fetch(endpoint, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      // If blob doesn't exist yet, create it with POST
-      const postResp = await fetch('https://jsonblob.com/api/jsonBlob', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Blob-Custom-Id': cleanCode
-        },
-        body: JSON.stringify(payload)
-      });
-      if (!postResp.ok) {
-        throw new Error('Cloud Sync Server did not accept update.');
+  const filename = 'ims_petty_cash_data.json';
+  const gistContent = {
+    description: `IMS Petty Cash System Data (${config.syncCode || 'IMS-DATA'})`,
+    public: false,
+    files: {
+      [filename]: {
+        content: JSON.stringify(payload, null, 2)
       }
     }
+  };
 
-    const config = getCloudConfig();
-    const updatedConfig = {
-      ...config,
-      syncCode: cleanCode,
-      lastSyncedAt: new Date().toISOString()
-    };
-    saveCloudConfig(updatedConfig);
-    return { success: true, timestamp: updatedConfig.lastSyncedAt };
-  } catch (err) {
-    console.error('Simple Cloud Sync Notice:', err);
-    // Fallback: save sync timestamp locally
-    const config = getCloudConfig();
-    const updatedConfig = {
-      ...config,
-      syncCode: cleanCode,
-      lastSyncedAt: new Date().toISOString()
-    };
-    saveCloudConfig(updatedConfig);
-    return { success: true, timestamp: updatedConfig.lastSyncedAt, localOnly: true };
-  }
-};
+  let url = 'https://api.github.com/gists';
+  let method = 'POST';
 
-// Simple 1-Click Cloud Pull via Sync Code
-export const fetchFromSimpleCloud = async (syncCode) => {
-  const cleanCode = syncCode.trim().toUpperCase();
-  if (!cleanCode) {
-    throw new Error('Please enter a valid Sync Code.');
+  if (config.githubGistId) {
+    url = `https://api.github.com/gists/${config.githubGistId}`;
+    method = 'PATCH';
   }
 
-  const endpoint = `https://jsonblob.com/api/jsonBlob/${encodeURIComponent(cleanCode)}`;
-
-  const response = await fetch(endpoint, {
-    headers: { 'Accept': 'application/json' }
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Accept': 'application/vnd.github+json',
+      'Authorization': `token ${config.githubToken.trim()}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(gistContent)
   });
 
   if (!response.ok) {
-    throw new Error(`Sync Code "${cleanCode}" not found on Cloud server. Please check the code and try again.`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `GitHub API error (${response.status})`);
   }
 
-  const result = await response.json();
-  if (!result || !result.data || !result.data.vouchers) {
-    throw new Error('Invalid cloud payload format.');
+  const data = await response.json();
+  const gistId = data.id;
+
+  const updatedConfig = {
+    ...config,
+    githubGistId: gistId,
+    lastSyncedAt: new Date().toISOString()
+  };
+  saveCloudConfig(updatedConfig);
+  return { success: true, gistId, timestamp: updatedConfig.lastSyncedAt };
+};
+
+export const fetchFromGitHubGist = async (config) => {
+  if (!config.githubGistId) {
+    throw new Error('No GitHub Gist ID found. Please upload to GitHub Cloud first.');
   }
 
-  return result.data;
+  const headers = config.githubToken ? { 'Authorization': `token ${config.githubToken.trim()}` } : {};
+  const response = await fetch(`https://api.github.com/gists/${config.githubGistId}`, { headers });
+
+  if (!response.ok) {
+    throw new Error(`GitHub API error (${response.status})`);
+  }
+
+  const gistData = await response.json();
+  const fileObj = gistData.files['ims_petty_cash_data.json'] || Object.values(gistData.files)[0];
+  
+  if (!fileObj || !fileObj.content) {
+    throw new Error('No valid IMS petty cash data found in GitHub Gist.');
+  }
+
+  return JSON.parse(fileObj.content).data;
 };
 
 // Export Cloud Backup JSON file download
@@ -128,7 +119,7 @@ export const downloadCloudBackupFile = (payload) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `IMS_Petty_Cash_Cloud_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `IMS_Petty_Cash_Backup_${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
