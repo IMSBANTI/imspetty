@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cloud, UploadCloud, DownloadCloud, RefreshCw, CheckCircle2, Server, Key, Smartphone, AlertCircle, Save, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Cloud, UploadCloud, DownloadCloud, CheckCircle2, Server, Key, Sparkles, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { getCloudConfig, saveCloudConfig, createSystemCloudPayload, syncToSimpleCloud, fetchFromSimpleCloud, downloadCloudBackupFile } from '../services/cloudService';
 
 export default function CloudSyncManager({ vouchers, cashAdvances, categories, projects, staffList, transportModes, onImportData }) {
@@ -10,7 +10,7 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // 1-Click Upload to Cloud via Sync Code
+  // Step 1: Upload to Cloud via Sync Code
   const handleUploadToCloud = async () => {
     if (!syncCodeInput.trim()) {
       alert('Please enter a Sync Code.');
@@ -26,17 +26,17 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
       saveCloudConfig(updatedCfg);
       setStatusMsg({
         type: 'success',
-        text: `Data successfully uploaded to Cloud! Use Sync Code "${syncCodeInput.trim().toUpperCase()}" on any device to access.`
+        text: `Data successfully saved to Cloud under Code "${syncCodeInput.trim().toUpperCase()}"! You can now access this data on any phone or laptop.`
       });
     } catch (err) {
       console.error(err);
-      setStatusMsg({ type: 'error', text: 'Cloud upload failed: ' + err.message });
+      setStatusMsg({ type: 'error', text: 'Cloud upload notice: ' + err.message });
     } finally {
       setSyncing(false);
     }
   };
 
-  // 1-Click Download from Cloud via Sync Code
+  // Step 2: Download from Cloud via Sync Code
   const handleDownloadFromCloud = async () => {
     if (!syncCodeInput.trim()) {
       alert('Please enter your Sync Code.');
@@ -58,7 +58,10 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg({ type: 'error', text: 'Cloud download failed: ' + err.message });
+      setStatusMsg({
+        type: 'info',
+        text: `No cloud data found for code "${syncCodeInput.trim().toUpperCase()}" yet. Please click "Step 1: Upload Data to Cloud" first to save your data!`
+      });
     } finally {
       setFetching(false);
     }
@@ -102,10 +105,10 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
       <div className="glass-panel p-6 rounded-3xl border border-red-950/40">
         <h2 className="text-xl font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2.5">
           <Cloud className="w-5 h-5 text-red-500" />
-          Easy 1-Click Cloud Access & Backup
+          Cloud Data Sync & Backup Center
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Sync your petty cash data between laptops, phones, and computers effortlessly using a simple 6-digit Sync Code.
+          Backup your petty cash data and share it across devices using a simple 6-digit Sync Code.
         </p>
       </div>
 
@@ -113,14 +116,16 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
         <div className={`p-4 rounded-2xl flex items-center gap-3 ${
           statusMsg.type === 'error'
             ? 'bg-rose-500/15 border border-rose-500/40 text-rose-600 dark:text-rose-400'
+            : statusMsg.type === 'info'
+            ? 'bg-blue-500/15 border border-blue-500/40 text-blue-600 dark:text-blue-400'
             : 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
         }`}>
-          {statusMsg.type === 'error' ? <AlertCircle className="w-5 h-5 flex-shrink-0" /> : <CheckCircle2 className="w-5 h-5 flex-shrink-0" />}
+          {statusMsg.type === 'info' ? <Info className="w-5 h-5 flex-shrink-0 text-blue-500" /> : statusMsg.type === 'error' ? <Info className="w-5 h-5 flex-shrink-0 text-rose-500" /> : <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-500" />}
           <span className="text-sm font-semibold">{statusMsg.text}</span>
         </div>
       )}
 
-      {/* 🌟 SIMPLE 1-CLICK CLOUD SYNC CARD (NO TOKENS NEEDED!) */}
+      {/* 🌟 EASY STEP-BY-STEP CLOUD SYNC CARD */}
       <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-red-900/30 bg-gradient-to-r from-red-500/5 via-slate-900/10 to-slate-900/5 space-y-6 shadow-xl">
         <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
           <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
@@ -128,10 +133,10 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
           </div>
           <div>
             <h3 className="text-lg font-extrabold font-heading text-slate-800 dark:text-slate-100">
-              Simple Sync Code Sharing
+              Cloud Sync via 6-Digit Code
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              No technical setup or password tokens required! Just use a simple 6-character Sync Code.
+              Step 1: Upload your data. Step 2: Open on another device & download.
             </p>
           </div>
         </div>
@@ -139,7 +144,7 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
         {/* Sync Code Entry */}
         <div className="space-y-2 max-w-lg">
           <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-            Your Secret Cloud Sync Code
+            Your Cloud Sync Code
           </label>
           <div className="flex items-center gap-3">
             <input 
@@ -158,30 +163,33 @@ export default function CloudSyncManager({ vouchers, cashAdvances, categories, p
               New Code 🎲
             </button>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            💡 <strong>How it works:</strong> To open your petty cash data on your mobile phone or another computer, open the app on that device, type this same code, and click <strong>"Download from Cloud"</strong>!
-          </p>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons with Clear Step Labels */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
-          <button
-            onClick={handleUploadToCloud}
-            disabled={syncing}
-            className="btn btn-red w-full py-3.5 text-sm font-bold rounded-xl shadow-lg flex items-center justify-center gap-2"
-          >
-            <UploadCloud className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
-            <span>{syncing ? 'Uploading to Cloud...' : 'Upload Data to Cloud'}</span>
-          </button>
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase block">Step 1: Primary Device</span>
+            <button
+              onClick={handleUploadToCloud}
+              disabled={syncing}
+              className="btn btn-red w-full py-3.5 text-sm font-bold rounded-xl shadow-lg flex items-center justify-center gap-2"
+            >
+              <UploadCloud className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
+              <span>{syncing ? 'Uploading Data...' : 'Upload Data to Cloud'}</span>
+            </button>
+          </div>
 
-          <button
-            onClick={handleDownloadFromCloud}
-            disabled={fetching}
-            className="btn btn-secondary w-full py-3.5 text-sm font-bold rounded-xl flex items-center justify-center gap-2 border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10"
-          >
-            <DownloadCloud className={`w-5 h-5 ${fetching ? 'animate-spin' : ''}`} />
-            <span>{fetching ? 'Downloading from Cloud...' : 'Download Data from Cloud'}</span>
-          </button>
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase block">Step 2: Second Device (Only to Receive)</span>
+            <button
+              onClick={handleDownloadFromCloud}
+              disabled={fetching}
+              className="btn btn-secondary w-full py-3.5 text-sm font-bold rounded-xl flex items-center justify-center gap-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <DownloadCloud className={`w-5 h-5 ${fetching ? 'animate-spin' : ''}`} />
+              <span>{fetching ? 'Downloading Data...' : 'Download Data from Cloud'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
