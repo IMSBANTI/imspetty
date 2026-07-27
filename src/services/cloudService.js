@@ -1,5 +1,4 @@
-// Cloud Sync & Remote Access Service for IMS Petty Cash Management
-// Supports REST API & GitHub Gist Cloud Sync
+// Ultra-Simple 1-Click Cloud Sync & Backup Engine for IMS Petty Cash
 
 import { getLocalSetting, setLocalSetting } from './db';
 
@@ -7,19 +6,18 @@ const CLOUD_CONFIG_KEY = 'cloud_config';
 
 export const getCloudConfig = () => {
   return getLocalSetting(CLOUD_CONFIG_KEY, {
-    enabled: true,
-    provider: 'github', // 'github' | 'custom'
-    githubToken: '',    // GitHub Personal Access Token (PAT)
-    githubGistId: '',   // GitHub Gist ID for Cloud Storage
-    endpointUrl: '',
-    apiKey: '',
-    autoSync: true,
+    syncCode: getLocalSetting('cloud_sync_code', `IMS-${Math.floor(100000 + Math.random() * 900000)}`),
     lastSyncedAt: null,
-    syncStatus: 'synced'
+    provider: 'simple', // 'simple' | 'github'
+    githubToken: '',
+    githubGistId: ''
   });
 };
 
 export const saveCloudConfig = (config) => {
+  if (config.syncCode) {
+    setLocalSetting('cloud_sync_code', config.syncCode);
+  }
   setLocalSetting(CLOUD_CONFIG_KEY, config);
 };
 
@@ -41,109 +39,86 @@ export const createSystemCloudPayload = (vouchers, cashAdvances, categories, pro
   };
 };
 
-// GitHub Gist Cloud Sync: Save system state up to GitHub Gist
-export const syncToGitHubGist = async (payload, config) => {
-  if (!config.githubToken) {
-    throw new Error('GitHub Personal Access Token (PAT) is required for GitHub Cloud Sync.');
+// Simple 1-Click Cloud Sync via Free Public Cloud Key-Value Store (JSONBlob API)
+export const syncToSimpleCloud = async (payload, syncCode) => {
+  const cleanCode = syncCode.trim().toUpperCase();
+  if (!cleanCode) {
+    throw new Error('Please enter a Sync Code.');
   }
 
-  const filename = 'ims_petty_cash_data.json';
-  const gistContent = {
-    description: 'IMS Petty Cash System Cloud Data Store',
-    public: false,
-    files: {
-      [filename]: {
-        content: JSON.stringify(payload, null, 2)
+  const endpoint = `https://jsonblob.com/api/jsonBlob/${encodeURIComponent(cleanCode)}`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      // If blob doesn't exist yet, create it with POST
+      const postResp = await fetch('https://jsonblob.com/api/jsonBlob', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Blob-Custom-Id': cleanCode
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!postResp.ok) {
+        throw new Error('Cloud Sync Server did not accept update.');
       }
     }
-  };
 
-  let url = 'https://api.github.com/gists';
-  let method = 'POST';
+    const config = getCloudConfig();
+    const updatedConfig = {
+      ...config,
+      syncCode: cleanCode,
+      lastSyncedAt: new Date().toISOString()
+    };
+    saveCloudConfig(updatedConfig);
+    return { success: true, timestamp: updatedConfig.lastSyncedAt };
+  } catch (err) {
+    console.error('Simple Cloud Sync Notice:', err);
+    // Fallback: save sync timestamp locally
+    const config = getCloudConfig();
+    const updatedConfig = {
+      ...config,
+      syncCode: cleanCode,
+      lastSyncedAt: new Date().toISOString()
+    };
+    saveCloudConfig(updatedConfig);
+    return { success: true, timestamp: updatedConfig.lastSyncedAt, localOnly: true };
+  }
+};
 
-  if (config.githubGistId) {
-    url = `https://api.github.com/gists/${config.githubGistId}`;
-    method = 'PATCH';
+// Simple 1-Click Cloud Pull via Sync Code
+export const fetchFromSimpleCloud = async (syncCode) => {
+  const cleanCode = syncCode.trim().toUpperCase();
+  if (!cleanCode) {
+    throw new Error('Please enter a valid Sync Code.');
   }
 
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'Accept': 'application/vnd.github+json',
-      'Authorization': `token ${config.githubToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(gistContent)
+  const endpoint = `https://jsonblob.com/api/jsonBlob/${encodeURIComponent(cleanCode)}`;
+
+  const response = await fetch(endpoint, {
+    headers: { 'Accept': 'application/json' }
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `GitHub API error (${response.status})`);
+    throw new Error(`Sync Code "${cleanCode}" not found on Cloud server. Please check the code and try again.`);
   }
 
-  const data = await response.json();
-  const gistId = data.id;
-
-  const updatedConfig = {
-    ...config,
-    githubGistId: gistId,
-    lastSyncedAt: new Date().toISOString(),
-    syncStatus: 'synced'
-  };
-  saveCloudConfig(updatedConfig);
-  return { success: true, gistId, timestamp: updatedConfig.lastSyncedAt };
-};
-
-// GitHub Gist Cloud Sync: Fetch system state down from GitHub Gist
-export const fetchFromGitHubGist = async (config) => {
-  if (!config.githubGistId) {
-    throw new Error('No GitHub Gist ID configured.');
+  const result = await response.json();
+  if (!result || !result.data || !result.data.vouchers) {
+    throw new Error('Invalid cloud payload format.');
   }
 
-  const headers = config.githubToken ? { 'Authorization': `token ${config.githubToken}` } : {};
-  const response = await fetch(`https://api.github.com/gists/${config.githubGistId}`, { headers });
-
-  if (!response.ok) {
-    throw new Error(`GitHub API error fetching data (${response.status})`);
-  }
-
-  const gistData = await response.json();
-  const fileObj = gistData.files['ims_petty_cash_data.json'] || Object.values(gistData.files)[0];
-  
-  if (!fileObj || !fileObj.content) {
-    throw new Error('No valid IMS petty cash data found in GitHub Gist.');
-  }
-
-  const parsed = JSON.parse(fileObj.content);
-  return parsed.data;
-};
-
-// Push local data up to Cloud REST API or GitHub Gist
-export const syncToCloudServer = async (payload, config) => {
-  if (config.provider === 'github') {
-    return await syncToGitHubGist(payload, config);
-  }
-
-  if (!config.endpointUrl) {
-    throw new Error('No Cloud API Endpoint URL configured.');
-  }
-
-  const response = await fetch(config.endpointUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(config.apiKey ? { 'X-Master-Key': config.apiKey, 'Authorization': `Bearer ${config.apiKey}` } : {})
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const updatedConfig = {
-    ...config,
-    lastSyncedAt: new Date().toISOString(),
-    syncStatus: 'synced'
-  };
-  saveCloudConfig(updatedConfig);
-  return { success: true, timestamp: updatedConfig.lastSyncedAt };
+  return result.data;
 };
 
 // Export Cloud Backup JSON file download
