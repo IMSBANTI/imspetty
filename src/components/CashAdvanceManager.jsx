@@ -269,18 +269,18 @@ export default function CashAdvanceManager({ cashAdvances, vouchers, onSaveAdvan
         </div>
 
         <div className="table-container border border-slate-200 dark:border-slate-800 rounded-2xl overflow-x-auto">
-          <table className="custom-table text-xs w-full">
+          <table className="custom-table text-xs w-full min-w-[900px]">
             <thead>
               <tr className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-semibold text-[11px] uppercase tracking-wider">
-                <th className="px-3.5 py-3 whitespace-nowrap">Date</th>
-                <th className="px-3.5 py-3 whitespace-nowrap">Ref / ID</th>
-                <th className="px-3.5 py-3 whitespace-nowrap">Transaction Type</th>
+                <th className="px-3 py-3 whitespace-nowrap">Date</th>
+                <th className="px-3 py-3 whitespace-nowrap">Ref / ID</th>
+                <th className="px-3 py-3 whitespace-nowrap">Transaction Type</th>
                 <th className="px-3.5 py-3">Particulars / Description</th>
-                <th className="px-3.5 py-3 whitespace-nowrap">Person / Source</th>
+                <th className="px-3 py-3 whitespace-nowrap">Person / Source</th>
                 <th className="px-3.5 py-3 text-right whitespace-nowrap">Cash In (+)</th>
                 <th className="px-3.5 py-3 text-right whitespace-nowrap">Cash Out (-)</th>
-                <th className="px-3.5 py-3 text-right whitespace-nowrap bg-slate-200 dark:bg-slate-800 font-bold sticky right-0 shadow-l">Running Balance (TK)</th>
-                {isAdmin && <th className="px-3.5 py-3 text-center whitespace-nowrap">Action</th>}
+                <th className="px-3.5 py-3 text-right whitespace-nowrap bg-slate-200/80 dark:bg-slate-800/80 font-bold">Running Balance (TK)</th>
+                {isAdmin && <th className="px-3 py-3 text-center whitespace-nowrap">Action</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -293,9 +293,9 @@ export default function CashAdvanceManager({ cashAdvances, vouchers, onSaveAdvan
               ) : (
                 ledgerWithBalance.map((tx) => (
                   <tr key={tx.id} className={tx.type === 'INCOME' ? 'bg-emerald-500/5 dark:bg-emerald-950/20' : 'hover:bg-slate-500/5'}>
-                    <td className="px-3.5 py-3 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">{tx.date}</td>
-                    <td className="px-3.5 py-3 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{tx.id}</td>
-                    <td className="px-3.5 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">{tx.date}</td>
+                    <td className="px-3 py-3 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{tx.id}</td>
+                    <td className="px-3 py-3 whitespace-nowrap">
                       {tx.type === 'INCOME' ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
                           <ArrowDownLeft className="w-3 h-3" /> ADVANCE IN
@@ -307,18 +307,18 @@ export default function CashAdvanceManager({ cashAdvances, vouchers, onSaveAdvan
                       )}
                     </td>
                     <td className="px-3.5 py-3 text-slate-600 dark:text-slate-400 max-w-xs truncate" title={tx.description}>{tx.description}</td>
-                    <td className="px-3.5 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{tx.person}</td>
+                    <td className="px-3 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{tx.person}</td>
                     <td className="px-3.5 py-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                       {tx.inAmount > 0 ? `+৳${tx.inAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '-'}
                     </td>
                     <td className="px-3.5 py-3 text-right font-mono font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                       {tx.outAmount > 0 ? `-৳${tx.outAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '-'}
                     </td>
-                    <td className="px-3.5 py-3 text-right font-mono font-extrabold text-slate-900 dark:text-slate-100 bg-white/95 dark:bg-[#0b0c10]/95 sticky right-0 whitespace-nowrap shadow-l">
+                    <td className="px-3.5 py-3 text-right font-mono font-extrabold text-slate-900 dark:text-slate-100 bg-slate-100/70 dark:bg-slate-900/70 whitespace-nowrap">
                       ৳{tx.runningBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     {isAdmin && (
-                      <td className="px-3.5 py-3 text-center whitespace-nowrap">
+                      <td className="px-3 py-3 text-center whitespace-nowrap">
                         {tx.type === 'INCOME' && (
                           <button
                             onClick={() => {
