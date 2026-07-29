@@ -11,7 +11,7 @@ export default function VoucherForm({ categories, projects, staffList, transport
     requestedBy: staffList[0] || 'Office Staff',
     description: '',
     transportMode: transportModes[0] || 'Rickshaw',
-    approvedBy: 'Harun Bhai',
+    approvedBy: '',
     amount: '',
     scanAttachment: null, // Base64 data URL
     attachmentName: '',
@@ -71,7 +71,7 @@ export default function VoucherForm({ categories, projects, staffList, transport
         requestedBy: staffList[0] || 'Office Staff',
         description: '',
         transportMode: transportModes[0] || 'Rickshaw',
-        approvedBy: 'Harun Bhai',
+        approvedBy: '',
         amount: '',
         scanAttachment: null,
         attachmentName: '',
@@ -88,121 +88,116 @@ export default function VoucherForm({ categories, projects, staffList, transport
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold font-heading text-slate-100 flex items-center gap-2">
+          <h2 className="text-xl font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
             Voucher Entry Form
           </h2>
-          <p className="text-xs text-slate-400">Fill in voucher details and upload scanned receipt image/PDF.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Fill in voucher details and upload scanned receipt image/PDF.</p>
         </div>
-        <div className="badge badge-gold font-mono">
+        <div className="badge badge-red font-mono font-bold">
           Auto ID: {formData.id}
         </div>
       </div>
 
       {successMsg && (
-        <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 flex items-center gap-3 animate-fade-in">
+        <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center gap-3 animate-fade-in">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <span className="text-sm font-medium">Voucher saved successfully! You can view it under Voucher Records or export to Excel.</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+      <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Voucher ID */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Voucher Number *</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Voucher Number *</label>
             <input 
               type="text" 
               required
               value={formData.id}
               onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-              className="form-control font-mono font-bold text-amber-400"
+              className="form-control font-mono font-bold text-red-600 dark:text-red-400 text-xs"
             />
           </div>
 
           {/* Date */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Voucher Date *</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Date *</label>
             <input 
               type="date" 
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             />
           </div>
 
           {/* Amount */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Amount (TK) *</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Amount (TK) *</label>
             <input 
               type="number" 
               step="0.01"
               required
-              placeholder="e.g. 500.00"
+              placeholder="e.g. 350.00"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="form-control font-mono text-lg font-bold text-emerald-400"
+              className="form-control font-mono text-sm font-bold text-red-600 dark:text-red-400"
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Expense Category *</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Expense Category *</label>
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
 
           {/* Project */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Project Name *</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Project Name *</label>
             <select
               value={formData.project}
               onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             >
-              {projects.map((proj) => (
-                <option key={proj} value={proj}>{proj}</option>
+              {projects.map((p) => (
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
 
-          {/* Requested By */}
+          {/* Requested By / Staff */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Requested / Paid To *</label>
-            <input
-              type="text"
-              required
-              placeholder="Person name"
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Requested By / Paid To *</label>
+            <select
               value={formData.requestedBy}
               onChange={(e) => setFormData({ ...formData, requestedBy: e.target.value })}
-              className="form-control"
-              list="staff-list-options"
-            />
-            <datalist id="staff-list-options">
+              className="form-control text-xs"
+            >
               {staffList.map((s) => (
-                <option key={s} value={s} />
+                <option key={s} value={s}>{s}</option>
               ))}
-            </datalist>
+            </select>
           </div>
 
-          {/* Transport Mode (if Conveyance) */}
+          {/* Transport Mode (if category is Conveyance or optional) */}
           {formData.category === 'Conveyance' && (
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Transport Mode</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Transport Mode</label>
               <select
                 value={formData.transportMode}
                 onChange={(e) => setFormData({ ...formData, transportMode: e.target.value })}
-                className="form-control"
+                className="form-control text-xs"
               >
                 {transportModes.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -213,90 +208,74 @@ export default function VoucherForm({ categories, projects, staffList, transport
 
           {/* Approved By */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Approved By</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Approved By</label>
             <input 
               type="text"
+              placeholder="Enter approving manager name..."
               value={formData.approvedBy}
               onChange={(e) => setFormData({ ...formData, approvedBy: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             />
           </div>
         </div>
 
         {/* Description / Particulars */}
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Description / Particulars *</label>
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Description / Particulars *</label>
           <textarea
             rows="3"
             required
             placeholder="e.g. Office to DBBL to IMS via Rickshaw for cash deposit..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="form-control"
+            className="form-control text-xs"
           ></textarea>
         </div>
 
         {/* Scanned Receipt Upload Attachment */}
-        <div className="border border-dashed border-slate-700 rounded-xl p-5 bg-slate-900/50 text-center space-y-3">
-          <div className="flex items-center justify-center gap-2 text-slate-400">
-            <UploadCloud className="w-6 h-6 text-blue-400" />
-            <span className="text-sm font-semibold text-slate-200">Optionally Attach Scanned Cash Voucher</span>
+        <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-5 bg-slate-50 dark:bg-slate-900/50 text-center space-y-3">
+          <div className="flex justify-center text-slate-400">
+            {formData.scanAttachment ? (
+              <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+            ) : (
+              <UploadCloud className="w-10 h-10 text-red-500" />
+            )}
           </div>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
-            Upload voucher receipt image (JPG/PNG) or PDF scanned document (Max size: 5MB).
-          </p>
-
+          <div>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {formData.scanAttachment ? 'Receipt Attached:' : 'Attach Scanned Cash Voucher / Receipt (Image or PDF)'}
+            </p>
+            {formData.scanAttachment && (
+              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
+                {formData.attachmentName}
+              </span>
+            )}
+          </div>
           <input 
-            type="file"
-            accept="image/*,application/pdf"
+            type="file" 
+            accept="image/*,.pdf"
             onChange={handleFileChange}
-            id="scanned-receipt-input"
+            id="scan-receipt-upload"
             className="hidden"
           />
-
           <label 
-            htmlFor="scanned-receipt-input"
-            className="btn btn-secondary text-xs inline-flex items-center gap-2 cursor-pointer"
+            htmlFor="scan-receipt-upload" 
+            className="btn btn-secondary text-xs py-2 px-4 rounded-xl cursor-pointer inline-flex items-center gap-1.5"
           >
-            <ImageIcon className="w-4 h-4 text-amber-400" />
-            <span>Select Scanned Receipt File</span>
+            <ImageIcon className="w-4 h-4" />
+            <span>{formData.scanAttachment ? 'Change Receipt Attachment' : 'Browse File (Max 5MB)'}</span>
           </label>
-
-          {formData.scanAttachment && (
-            <div className="mt-3 p-3 bg-slate-800 rounded-lg inline-flex items-center gap-3 border border-slate-700">
-              {formData.attachmentType?.startsWith('image/') ? (
-                <img 
-                  src={formData.scanAttachment} 
-                  alt="Scanned Voucher" 
-                  className="w-12 h-12 object-cover rounded border border-slate-600"
-                />
-              ) : (
-                <FileText className="w-8 h-8 text-rose-400" />
-              )}
-              <div className="text-left text-xs">
-                <p className="font-semibold text-slate-200 truncate max-w-[200px]">{formData.attachmentName}</p>
-                <p className="text-slate-400">Scan Attached Successfully</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, scanAttachment: null, attachmentName: '', attachmentType: '' }))}
-                className="text-rose-400 hover:text-rose-300 ml-2 text-xs font-bold"
-              >
-                Remove
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Submit */}
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <button
-            type="submit"
+        {/* Form Actions */}
+        <div className="flex justify-end pt-2 border-t border-slate-200 dark:border-slate-800">
+          <button 
+            type="submit" 
             disabled={saving}
-            className="btn btn-primary px-6"
+            className="btn btn-red py-3 px-8 text-xs font-bold rounded-xl shadow-lg flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? 'Saving Voucher...' : 'Save Voucher Data'}</span>
+            <span>{saving ? 'Saving Voucher...' : 'Save Petty Cash Voucher'}</span>
           </button>
         </div>
       </form>
