@@ -2,8 +2,23 @@
 
 import * as XLSX from 'xlsx';
 
-export const exportVouchersToExcel = (vouchers, cashAdvances = [], title = 'IMS Petty Cash Expenditures Report') => {
-  if ((!vouchers || vouchers.length === 0) && (!cashAdvances || cashAdvances.length === 0)) {
+export const exportVouchersToExcel = (vouchers = [], cashAdvances = [], title = 'IMS Petty Cash Expenditures Report') => {
+  // Handle flexible arguments (if 2nd param is string title)
+  let actualAdvances = cashAdvances;
+  let actualTitle = title;
+
+  if (typeof cashAdvances === 'string') {
+    actualTitle = cashAdvances;
+    actualAdvances = [];
+  }
+
+  if (!Array.isArray(actualAdvances)) {
+    actualAdvances = [];
+  }
+
+  const vList = Array.isArray(vouchers) ? vouchers : [];
+
+  if (vList.length === 0 && actualAdvances.length === 0) {
     alert('No voucher or cash advance data available to export.');
     return;
   }
@@ -16,7 +31,7 @@ export const exportVouchersToExcel = (vouchers, cashAdvances = [], title = 'IMS 
   const categoryTotals = {};
   let grandTotalSpent = 0;
 
-  vouchers.forEach((v) => {
+  vList.forEach((v) => {
     const proj = v.project || 'IMS Head Office';
     const cat = v.category || 'Office Others';
     const amt = parseFloat(v.amount) || 0;
@@ -26,7 +41,7 @@ export const exportVouchersToExcel = (vouchers, cashAdvances = [], title = 'IMS 
     grandTotalSpent += amt;
   });
 
-  const totalReceived = cashAdvances.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
+  const totalReceived = actualAdvances.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
   const remainingBalance = totalReceived - grandTotalSpent;
 
   // Topsheet Rows
@@ -58,65 +73,56 @@ export const exportVouchersToExcel = (vouchers, cashAdvances = [], title = 'IMS 
   });
   topsheetRows.push(['', 'TOTAL CATEGORY EXPENDITURE', grandTotalSpent]);
 
-  const wsSummary = XLSX.utils.aoa_to_sheet(topsheetRows);
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Topsheet Summary');
+  const topsheetWs = XLSX.utils.aoa_to_sheet(topsheetRows);
+  XLSX.utils.book_append_sheet(wb, topsheetWs, 'Topsheet Summary');
 
-  // 2. Prepare Cash Advance Receipts Sheet
-  if (cashAdvances.length > 0) {
-    const advanceRows = cashAdvances.map((a, idx) => ({
-      'SL No': idx + 1,
-      'Ref / ID': a.id,
-      'Date Received': a.date,
-      'Received From': a.receivedFrom,
-      'Payment Method': a.paymentMethod,
-      'Approved By': a.approvedBy,
-      'Description / Remarks': a.description,
-      'Amount Received (TK)': parseFloat(a.amount) || 0
-    }));
+  // 2. All Vouchers Sheet
+  if (vList.length > 0) {
+    const voucherRows = [
+      ['Voucher No', 'Date', 'Category', 'Project', 'Requested By', 'Description / Particulars', 'Transport Mode', 'Approved By', 'Amount (TK)']
+    ];
 
-    const wsAdvances = XLSX.utils.json_to_sheet(advanceRows);
-    XLSX.utils.book_append_sheet(wb, wsAdvances, 'Cash Advances Received');
+    vList.forEach((v) => {
+      voucherRows.push([
+        v.id,
+        v.date,
+        v.category,
+        v.project,
+        v.requestedBy,
+        v.description,
+        v.transportMode || '-',
+        v.approvedBy || 'Management',
+        parseFloat(v.amount) || 0
+      ]);
+    });
+
+    const voucherWs = XLSX.utils.aoa_to_sheet(voucherRows);
+    XLSX.utils.book_append_sheet(wb, voucherWs, 'All Vouchers');
   }
 
-  // 3. Prepare Detailed Voucher List Sheet
-  const voucherRows = vouchers.map((v, idx) => ({
-    'SL No': idx + 1,
-    'Voucher No': v.id,
-    'Date': v.date,
-    'Project': v.project,
-    'Category': v.category,
-    'Requested By': v.requestedBy,
-    'Description / Particulars': v.description,
-    'Transport Mode': v.transportMode || '-',
-    'Approved By': v.approvedBy || 'Management',
-    'Amount (TK)': parseFloat(v.amount) || 0
-  }));
+  // 3. Cash Advances Received Sheet
+  if (actualAdvances.length > 0) {
+    const advanceRows = [
+      ['Advance Ref #', 'Date Received', 'Received From', 'Payment Method', 'Description / Remarks', 'Authorized By', 'Amount Received (TK)']
+    ];
 
-  const wsVouchers = XLSX.utils.json_to_sheet(voucherRows);
-  XLSX.utils.book_append_sheet(wb, wsVouchers, 'All Vouchers Data');
+    actualAdvances.forEach((a) => {
+      advanceRows.push([
+        a.id,
+        a.date,
+        a.receivedFrom || 'Accounts',
+        a.paymentMethod || 'Cash',
+        a.description || 'Cash advance',
+        a.approvedBy || 'Management',
+        parseFloat(a.amount) || 0
+      ]);
+    });
 
-  // 4. Monthwise Expenditure Breakdown Sheet
-  const monthMap = {};
-  vouchers.forEach((v) => {
-    const month = v.date ? v.date.substring(0, 7) : 'Unknown';
-    monthMap[month] = (monthMap[month] || 0) + (parseFloat(v.amount) || 0);
-  });
+    const advanceWs = XLSX.utils.aoa_to_sheet(advanceRows);
+    XLSX.utils.book_append_sheet(wb, advanceWs, 'Cash Advances');
+  }
 
-  const monthRows = [
-    ['MONTHWISE EXPENDITURE REPORT'],
-    [''],
-    ['Month (YYYY-MM)', 'Total Expenditure (TK)']
-  ];
-
-  Object.keys(monthMap).sort().forEach((m) => {
-    monthRows.push([m, monthMap[m]]);
-  });
-  monthRows.push(['GRAND TOTAL', grandTotalSpent]);
-
-  const wsMonths = XLSX.utils.aoa_to_sheet(monthRows);
-  XLSX.utils.book_append_sheet(wb, wsMonths, 'Monthly Expenditure');
-
-  // Save File
-  const filename = `IMS_Petty_Cash_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  // Download formatted Excel workbook
+  const safeFilename = (actualTitle.endsWith('.xlsx') ? actualTitle : `${actualTitle}.xlsx`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+  XLSX.writeFile(wb, safeFilename);
 };

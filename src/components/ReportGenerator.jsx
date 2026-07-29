@@ -46,36 +46,36 @@ export default function ReportGenerator({ vouchers, categories, projects, staffL
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header & Controls */}
-      <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+      <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold font-heading text-slate-100 flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-bold font-heading text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-red-500" />
               Customized Report Generator
             </h2>
-            <p className="text-xs text-slate-400">Build custom expenditure reports, preview summaries, and download formatted Excel sheets.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Build custom expenditure reports, preview summaries, and download formatted Excel sheets.</p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleReset}
-              className="btn btn-secondary text-xs flex items-center gap-1.5"
+              className="btn btn-secondary text-xs flex items-center gap-1.5 rounded-xl py-2 px-3"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Reset Filters</span>
             </button>
             <button
-              onClick={() => exportVouchersToExcel(filteredVouchers, 'IMS Customized Petty Cash Report')}
-              className="btn btn-gold text-xs flex items-center gap-1.5"
+              onClick={() => exportVouchersToExcel(filteredVouchers, [], 'IMS_Customized_Petty_Cash_Report.xlsx')}
+              className="btn btn-red text-xs flex items-center gap-1.5 rounded-xl py-2 px-4 font-bold shadow-md"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Generate Excel Sheet</span>
             </button>
             <button
               onClick={() => window.print()}
-              className="btn btn-primary text-xs flex items-center gap-1.5 no-print"
+              className="btn btn-secondary text-xs flex items-center gap-1.5 rounded-xl py-2 px-3"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print / Save PDF</span>
@@ -84,33 +84,33 @@ export default function ReportGenerator({ vouchers, categories, projects, staffL
         </div>
 
         {/* Filter Inputs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Start Date</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Start Date</label>
             <input 
               type="date"
               value={filters.startDate}
               onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">End Date</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">End Date</label>
             <input 
               type="date"
               value={filters.endDate}
               onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Category</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Category</label>
             <select
               value={filters.category}
               onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             >
               <option value="ALL">All Categories</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -118,11 +118,11 @@ export default function ReportGenerator({ vouchers, categories, projects, staffL
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Project</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Project</label>
             <select
               value={filters.project}
               onChange={(e) => setFilters({ ...filters, project: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             >
               <option value="ALL">All Projects</option>
               {projects.map(p => <option key={p} value={p}>{p}</option>)}
@@ -130,11 +130,11 @@ export default function ReportGenerator({ vouchers, categories, projects, staffL
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Staff / Employee</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Staff / Employee</label>
             <select
               value={filters.staff}
               onChange={(e) => setFilters({ ...filters, staff: e.target.value })}
-              className="form-control"
+              className="form-control text-xs"
             >
               <option value="ALL">All Staff</option>
               {staffList.map(s => <option key={s} value={s}>{s}</option>)}
@@ -143,115 +143,70 @@ export default function ReportGenerator({ vouchers, categories, projects, staffL
         </div>
       </div>
 
-      {/* Printable Report Output Area */}
-      <div className="printable-area glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
-        <div className="text-center border-b border-slate-700 pb-4">
-          <h2 className="text-2xl font-bold font-heading text-slate-100">IMS GROUP - PETTY CASH EXPENDITURE REPORT</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Report Period: {filters.startDate || 'Beginning'} to {filters.endDate || 'Present'} | Category: {filters.category} | Project: {filters.project}
-          </p>
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-1 shadow-md">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Filtered Records Count</p>
+          <h3 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">{filteredVouchers.length} Vouchers</h3>
         </div>
 
-        {/* Report Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-            <p className="text-xs font-medium text-slate-400">Total Filtered Vouchers</p>
-            <h4 className="text-xl font-bold text-slate-100 mt-1">{filteredVouchers.length}</h4>
-          </div>
-
-          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-            <p className="text-xs font-medium text-slate-400">Total Expenditure</p>
-            <h4 className="text-xl font-bold font-mono text-amber-400 mt-1">
-              ৳{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-            </h4>
-          </div>
-
-          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-            <p className="text-xs font-medium text-slate-400">Average Voucher Amount</p>
-            <h4 className="text-xl font-bold text-emerald-400 mt-1">
-              ৳{(filteredVouchers.length > 0 ? totalAmount / filteredVouchers.length : 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-            </h4>
-          </div>
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-1 shadow-md">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Filtered Amount</p>
+          <h3 className="text-2xl font-extrabold font-mono text-red-600 dark:text-red-400">
+            ৳{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </h3>
         </div>
 
-        {/* Breakdown Tables */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Category Summary */}
-          <div>
-            <h4 className="text-sm font-bold text-slate-200 mb-2">Category Summary</h4>
-            <table className="custom-table text-xs">
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th className="text-right">Total (TK)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(catSummary).map(([c, amt]) => (
-                  <tr key={c}>
-                    <td className="text-slate-300">{c}</td>
-                    <td className="text-right font-mono font-semibold text-amber-400">৳{amt.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Project Summary */}
-          <div>
-            <h4 className="text-sm font-bold text-slate-200 mb-2">Project Summary</h4>
-            <table className="custom-table text-xs">
-              <thead>
-                <tr>
-                  <th>Project</th>
-                  <th className="text-right">Total (TK)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(projSummary).map(([p, amt]) => (
-                  <tr key={p}>
-                    <td className="text-slate-300">{p}</td>
-                    <td className="text-right font-mono font-semibold text-amber-400">৳{amt.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-1 shadow-md">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Category Breakdown</p>
+          <h3 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">{Object.keys(catSummary).length} Categories</h3>
         </div>
+      </div>
 
-        {/* Itemized Vouchers Table */}
-        <div>
-          <h4 className="text-sm font-bold text-slate-200 mb-2">Itemized Voucher List</h4>
-          <div className="table-container">
-            <table className="custom-table text-xs">
-              <thead>
+      {/* Preview Table */}
+      <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-lg">
+        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Report Items Preview</h3>
+        <div className="table-container border border-slate-200 dark:border-slate-800 rounded-2xl overflow-x-auto">
+          <table className="custom-table text-xs w-full">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-semibold text-[11px] uppercase tracking-wider">
+                <th className="px-3.5 py-3 whitespace-nowrap">Voucher No</th>
+                <th className="px-3.5 py-3 whitespace-nowrap">Date</th>
+                <th className="px-3.5 py-3 whitespace-nowrap">Category</th>
+                <th className="px-3.5 py-3 whitespace-nowrap">Project</th>
+                <th className="px-3.5 py-3 whitespace-nowrap">Requested By</th>
+                <th className="px-3.5 py-3">Description</th>
+                <th className="px-3.5 py-3 text-right whitespace-nowrap">Amount (TK)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              {filteredVouchers.length === 0 ? (
                 <tr>
-                  <th>Voucher #</th>
-                  <th>Date</th>
-                  <th>Project</th>
-                  <th>Category</th>
-                  <th>Requested By</th>
-                  <th>Description</th>
-                  <th className="text-right">Amount (TK)</th>
+                  <td colSpan="7" className="text-center py-8 text-slate-400">
+                    No vouchers match your filter criteria.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredVouchers.map((v) => (
-                  <tr key={v.id}>
-                    <td className="font-mono text-blue-400">{v.id}</td>
-                    <td>{v.date}</td>
-                    <td>{v.project}</td>
-                    <td>{v.category}</td>
-                    <td>{v.requestedBy}</td>
-                    <td>{v.description}</td>
-                    <td className="text-right font-mono font-semibold text-amber-400">
-                      ৳{parseFloat(v.amount).toFixed(2)}
+              ) : (
+                filteredVouchers.map((v) => (
+                  <tr key={v.id} className="hover:bg-slate-500/5 transition-colors">
+                    <td className="px-3.5 py-3 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{v.id}</td>
+                    <td className="px-3.5 py-3 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">{v.date}</td>
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30 whitespace-nowrap">
+                        {v.category}
+                      </span>
+                    </td>
+                    <td className="px-3.5 py-3 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">{v.project}</td>
+                    <td className="px-3.5 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{v.requestedBy}</td>
+                    <td className="px-3.5 py-3 text-slate-600 dark:text-slate-400 max-w-xs truncate" title={v.description}>{v.description}</td>
+                    <td className="px-3.5 py-3 text-right font-mono font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
+                      ৳{Number(v.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
